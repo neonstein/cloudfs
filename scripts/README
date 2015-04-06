@@ -1,0 +1,110 @@
+
+1. How to setup your disks (SSD/HDD) in the VirtualBox setup?
+=============================================================
+
+First "cd" into the 'scripts/' directory and then run the following scripts in 
+the order given below:
+
+./format_disks.sh           (to create the SSD/HDD disks with ext2 file system)
+./mount_disks.sh
+
+If successful, you are ready to use the VirtualBox for your experiments.
+
+
+2. Description of all the scripts
+=================================
+
+This "scripts/" directory contains the following scripts:
+
+/*
+ ********************************
+ *** VirtualBox Setup Scripts ***
+ ********************************
+ */
+
+[format_disks.sh]
+    - To create the Ext2 file system on the SSD and HDD
+    - Usage: ./format_disk.sh
+
+[mount_disks.sh]
+    - To mount the SSD and HDD to appropriate mount points (passed as
+      arguments to the script)
+    - Usage: ./mount_disks.sh SSD_MNT_DIRECTORY HDD_MNT_DIRECTORY
+
+[umount_disks.sh]
+    - To un-mount the SSD and HDD from appropriate mount points (passed as
+      arguments to the script)
+    - Usage: ./umount_disks.sh SSD_MNT_DIRECTORY HDD_MNT_DIRECTORY
+
+/*
+ *******************************
+ *** Project Testing Scripts ***
+ *******************************
+ */
+
+[test_part1.sh]
+    - To test Part 1 of the project by extracting a tar-ball in CloudFS and
+      then performing either an "md5sum" on all the files or an "ls -alR" on
+      the directory.
+    - This script uses "vmstat -d" to measure the number of iostats performed
+      on the SSD and the HDD, and prints the different after each operation --
+      useful for measurements and debugging
+    - Usage: 
+        ./test_part1.sh TEST_SCALE CLOUDFS_MOUNT CLOUDFS_THRESHOLD
+      where ...
+        TEST_SCALE is s for small (default), b for big, l for large 
+
+[test_part2.sh]
+    - To test Part 2 of the project by three different workloads from
+      test_part2_workload.py. It mounts CloudFS with setting both SSD 
+      size and HDD size to be 100MB.
+      * stress test: it randomly generates 200 files, then randomly
+        read/overwrite 1000 times on previous files, and finally
+        removes all the files.
+         
+      * dedup test: it generates 200 files. 75% of them have the same content.
+        And the rest 25% of them are randomly generated.
+        And the end of test, it removes all the files.
+
+      * fshare test: it randomly generates 200 files to share in cloud, 
+        they are randomly assigned to one of the four pre-defined types:
+        music, movie, photo, and document. 
+      
+    - This script accesses "http://localhost:8888/admin/stat" to
+      get cloud storage usage cost from the boot of S3 server.
+      It will print out:
+      NumRequests NumReadBytes CurrentUsage MaxUsage
+
+    - Usage: 
+        ./test_part1.sh CLOUDFS_MOUNT CLOUDFS_THRESHOLD
+
+
+/*
+ *******************************
+ *** General Support Scripts ***
+ *******************************
+ */
+
+[cloudfs_controller.sh]
+    - This allows you to unmount, mount and remout the file system at the
+      desired mount point and with the desired threshold
+    - NOTE: this script uses fixed constants for three cloudFS parameters ...
+            --- the process path (../src/build/bin/cloudfs)
+            --- the SSD mount point (/mnt/ssd/)
+            --- the HDD mount point (/mnt/hdd/)
+    - Usage: 
+        ./cloudfs_controller.sh MODE CLOUDFS_MOUNT MFS_THRESHOLD"
+      where ...
+        MODE is either m for mount, u for unmount, x for (unmount+mount)
+
+
+Other files 
+    - "./stat_summarizer [LOG_FILE]" is used internally to summarize the number
+      of blocks read/written for a given operation
+    - We provide three TAR files for testing; each file is of a different size.
+      small_test, big_test and large_test are example tar balls
+
+
+
+
+
